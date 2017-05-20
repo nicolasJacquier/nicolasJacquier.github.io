@@ -14,6 +14,7 @@
     rect:hover {
         fill-opacity: 1;
     }
+
   </style>
 </head>
 <body>
@@ -24,9 +25,9 @@
   //define margin and graphic field
   var margin = {top: 40, bottom: 10, left: 20, right: 20};
   var width = 800 - margin.left - margin.right;
-  var height = 700 - margin.top - margin.bottom;
+  var height = 50000 - margin.top - margin.bottom;
   
-  // Creates sources <svg> element
+  // Creates sources <svg> element and place it in the body of the html file
   var svg = d3.select("body").append("svg")
               .attr("width", width+margin.left+margin.right)
               .attr("height", height+margin.top+margin.bottom);
@@ -38,10 +39,11 @@
   // Global variable for all data
   var data;
   var bar_height = 5;
+  var circle_height = 5;
   
   // Scales setup
   var scale = d3.scale.linear()
-    .range([0, width]);
+    .range([0, width/5]);
 	
   /////////////////////////
   
@@ -49,7 +51,7 @@
     data = csv;
 	
     scale.domain([0, 20]);  //domain scale, update with data !!
-    var rect = g.selectAll("rect")
+    /*var rect = g.selectAll("rect")
         .data(data)
       .enter().append("rect")
       .attr("fill", "steelblue")
@@ -62,7 +64,33 @@
       .attr("y", function(d, i) {
           return (bar_height + 5) * i;
       });
+	  console.log(data);*/
+	 
+	var circle = g.selectAll("circle")
+        .data(data)
+      .enter().append("circle")
+      .attr("fill", "yellow")
+	  .attr("stroke", "green")
+	  .attr("stroke-width", 4)
+      .attr("width", function(d, i) {
+          return scale(d["beds"]);
+		  
+      })
+      .attr("height", function(d, i){
+			return scale(d["beds"]);
+	  })
+			
+      .attr("cx", 50)
+      .attr("cy", function(d, i) {
+          return 50 * i;
+      })
+	  .attr("r", function(d, i){
+			return scale(d["beds"]);
+		})
 	  console.log(data);
+	  
+	  
+	  
   });
   
   </script>
