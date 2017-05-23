@@ -51,7 +51,7 @@
     data = csv;
 	
     scale.domain([0, 20]);  //domain scale, update with data !!
-    /*var rect = g.selectAll("rect")
+    var rect = g.selectAll("rect")
         .data(data)
       .enter().append("rect")
       .attr("fill", "steelblue")
@@ -60,11 +60,11 @@
 		  
       })
       .attr("height", bar_height)
-      .attr("x", 0)
+      .attr("x", 150)
       .attr("y", function(d, i) {
           return (bar_height + 5) * i;
       });
-	  console.log(data);*/
+	  console.log(data);
 	 
 	var circle = g.selectAll("circle")
         .data(data)
@@ -89,6 +89,16 @@
 		})
 	  console.log(data);
 	  
+	var text = g.selectAll("text")
+		.data(data)
+		.enter().append("text")
+		.attr("x",230)
+		.attr("y", function(d,i){
+			return 15*i;
+		})
+		.text(function(d,i) { 
+			return d["beds"]; 
+		})
 	  
 	  
   });
