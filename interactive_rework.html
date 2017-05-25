@@ -4,7 +4,7 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
   <style type="text/css">
     body {
-      width: 800px;
+      width: 5000px;
       margin: 25px auto;
       font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
     }
@@ -18,13 +18,13 @@
   </style>
 </head>
 <body>
-  <h1>Test one : number of beds</h1>
+  <h1>Geographical repartition of points on an empty field</h1>
 
   <script type="text/javascript">
   
   //define margin and graphic field
   var margin = {top: 40, bottom: 10, left: 20, right: 20};
-  var width = 800 - margin.left - margin.right;
+  var width = 5000 - margin.left - margin.right;
   var height = 50000 - margin.top - margin.bottom;
   
   // Creates sources <svg> element and place it in the body of the html file
@@ -38,12 +38,13 @@
 			  
   // Global variable for all data
   var data;
-  var bar_height = 5;
+  var bar_height = 10;
   var circle_height = 5;
+  var mult_i = 75;
   
   // Scales setup
   var scale = d3.scale.linear()
-    .range([0, width/5]);
+    .range([0, width/15]);
 	
   /////////////////////////
   
@@ -51,7 +52,8 @@
     data = csv;
 	
     scale.domain([0, 20]);  //domain scale, update with data !!
-    var rect = g.selectAll("rect")
+	
+    /*var rect = g.selectAll("rect")// rectangles
         .data(data)
       .enter().append("rect")
       .attr("fill", "steelblue")
@@ -62,43 +64,42 @@
       .attr("height", bar_height)
       .attr("x", 150)
       .attr("y", function(d, i) {
-          return (bar_height + 5) * i;
+          return mult_i * i;
       });
-	  console.log(data);
+	  console.log(data);*/
 	 
-	var circle = g.selectAll("circle")
+	var circle = g.selectAll("circle")// circles
         .data(data)
       .enter().append("circle")
       .attr("fill", "yellow")
 	  .attr("stroke", "green")
 	  .attr("stroke-width", 4)
-      .attr("width", function(d, i) {
+      /*.attr("width", function(d, i) {
           return scale(d["beds"]);
 		  
       })
       .attr("height", function(d, i){
 			return scale(d["beds"]);
-	  })
+	  })*/
 			
-      .attr("cx", 50)
+      .attr("cx", function(d, i){
+			return (((-1) * d["longitude"])-121 )*1000 + 500 ;
+	  })
       .attr("cy", function(d, i) {
-          return 50 * i;
+          return (39-d["latitude"]) * 1000;
       })
-	  .attr("r", function(d, i){
-			return scale(d["beds"]);
-		})
-	  console.log(data);
+	  .attr("r", 10)
 	  
-	var text = g.selectAll("text")
+	/*var text = g.selectAll("text") //printing data
 		.data(data)
 		.enter().append("text")
-		.attr("x",230)
+		.attr("x",50)
 		.attr("y", function(d,i){
-			return 15*i;
+			return mult_i * i;
 		})
 		.text(function(d,i) { 
 			return d["beds"]; 
-		})
+		})*/
 	  
 	  
   });
