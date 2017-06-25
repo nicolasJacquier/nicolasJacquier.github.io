@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+	var build_html = ''
+    $(document).ready(function(){
+        console.log('READY');
+		$('#click').click(function(){
+		     xhrPost();
+			 if(build_html.length!=0)
+			  $('#disp_data').html(build_html);
+			  //build_html = '';
+			 	
+		});
+    });
+	</script>
+	
+    <script>
+	  
+      function xhrPost() {
+	    
+        var data = { 'filename': "18.json","count":"10"};
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+        xhr.addEventListener("readystatechange", function () {
+          if (this.readyState === 4) {
+		    var data_ = JSON.parse(this.responseText)
+			for(var i =0;i<data_.length; i++)
+			{
+			   build_html += data_[i]._id + '<br/>';
+		       //console.log(data_[i]._id)			
+			   		
+			   	   
+			}
+			//document.getElementById("disp_data").innerHTML = 'HELLO';
+          }
+        });
+
+        xhr.open("POST", "/");
+        xhr.setRequestHeader("cache-control", "no-cache");
+        xhr.setRequestHeader("content-type", "application/json;charset=UTF-8");
+        xhr.send(JSON.stringify(data));
+      }
+    </script>
+  </head>
+
+  <body>
+  <button id='click' onclick=""> Send Data </button>
+  <div id='disp_data'>azdazd</div>
+  
+  </body>
+</html>
