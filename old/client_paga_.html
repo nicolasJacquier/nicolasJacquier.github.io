@@ -4,13 +4,12 @@
     <script>
 	var build_html = ''
     $(document).ready(function(){
-        //console.log('READY');
-		//xhrPost();
+        console.log('READY');
 		$('#click').click(function(){
 		     xhrPost();
 			 if(build_html.length!=0)
 			  $('#disp_data').html(build_html);
-			  build_html = '';
+			  //build_html = '';
 			 	
 		});
     });
@@ -20,7 +19,7 @@
 	  
       function xhrPost() {
 	    
-        var data = { 'filename': "18.json","count":"45"};
+        var data = { 'filename': "18.json","count":"10"};
         var xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
         xhr.addEventListener("readystatechange", function () {
@@ -28,8 +27,7 @@
 		    var data_ = JSON.parse(this.responseText)
 			for(var i =0;i<data_.length; i++)
 			{
-			   var date_ = new Date(1000*data_[i].date).getDay();
-			   build_html += data_[i].date +' = '+new Date(1000*data_[i].date).getHours() + ':' + new Date(1000*data_[i].date).getMinutes() +'  ' + new Date(1000*data_[i].date).getDate()+'<br/>';
+			   build_html += data_[i]._id + '<br/>';
 		       //console.log(data_[i]._id)			
 			   		
 			   	   
@@ -48,7 +46,7 @@
 
   <body>
   <button id='click' onclick=""> Send Data </button>
-  <div id='disp_data'>Data</div>
+  <div id='disp_data'>azdazd</div>
   
   </body>
 </html>
