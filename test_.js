@@ -9,6 +9,8 @@ var tmp_ = []
 JSONStream = require('JSONStream'),
 es = require('event-stream');
 var counter_ = 0
+var prev_counter_ = 0
+var first_post_req__ = 0;
 var fname_ = '';
 
 var server = app.listen(8081, function () 
@@ -19,13 +21,14 @@ var server = app.listen(8081, function ()
 })
 
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname + '/client_paga_.html'));
+    res.sendFile(path.join(__dirname + '/index_main.html'));
 });
 
 app.post('/', function (req, res) {
 	var bodyStr = '';	
 	finalData=[];
-	counter_ = 0
+	
+	counter_ = 0;
 	req.on("data",function(chunk){ bodyStr += chunk.toString(); });
     req.on("end",function(){
 		
@@ -40,15 +43,24 @@ app.post('/', function (req, res) {
 		};
 		
 		getStream().pipe(es.mapSync(function(data){
-		 if(counter_ < req_parsed_.count)
-		   finalData.push(data);
-		 else
-		 {
-			 
-		   stream.unpipe();
-		   res.end( JSON.stringify(finalData));
-		 }
-		 counter_+=1
+
+		if(first_post_req__ == 0)
+		{
+			 if(counter_ < req_parsed_.count)
+			   finalData.push(data);
+			 else
+			 {
+			   first_post_req__ += 1;
+			   prev_counter_ = counter_;
+			   stream.unpipe();
+			   res.end( JSON.stringify(finalData));
+			 }
+		}
+		
+		else
+		{stream.unpipe();}
+		
+		counter_+=1
 		}));
 	}); 
 });

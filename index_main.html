@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+	.axis 
+	{
+	  font: 10px sans-serif;
+	}
+	.axis path,
+	.axis line 
+	{
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://d3js.org/d3.v4.0.0-alpha.29.min.js"></script>
+
+<script>
+$(document).ready(function()
+{
+    var build_html = "";
+	var tmp_str = "";
+	var dates_tmp= [];
+	var dates__ =[];
+	var tmp_ = [];
+	var fname_ = ["15.json"];
+	var main_dates__ = [];
+	var counter_ = 0;
+	var tmp_date = [];
+	var tmp_holder__ = [];
+	var t_ = [];
+	var final_data_ = [];
+	var hour_= 0;
+	var min__ = 0;
+	var min_ = 0;
+	
+	$("button").click(function(){	
+	     for(var findex = 0;findex<fname_.length;findex++)
+			send_data_(fname_[findex]);
+    });
+	
+	function show_data__(dat)
+	{ $("#disp_data").html(dat); }	
+	function send_data_(fname__)
+	{
+	    jQuery.ajax(
+			{
+				url : '/',
+				type: 'POST',
+				dataType : "json",
+				data: '{"filename": "'+fname__+'","count":"100"}',
+				success: function(data){				      
+						for(var i=0; i<data.length; i++)
+						{
+							   dates_tmp.push(data[i].date);//raw data to sort						   
+							   myDate = new Date(1000*data[i].date);//date
+							   if(!tmp_.includes(myDate.getDate()))tmp_.push(myDate.getDate());
+								 dates__.push(myDate.getDate());					   						   
+						}
+					    dates_tmp.sort(function(a,b)
+					    {
+							return (a-b);
+						});
+						for(var i=0; i<dates_tmp.length;i++)
+						{
+							var n = new Date(1000*dates_tmp[i]);
+							
+							if(n.getHours()<12)
+							{	
+							    
+								if(n.getMinutes() <= 9) min__ = min__+"0"+n.getMinutes();
+								else min__ = n.getMinutes();
+								console.log(min__)
+								
+								if(n.getHours() <= 9) hour_ = hour_+"0"+n.getHours();
+								else hour_ = n.getHours();
+								
+							    tmp_str = n.getDate() + " " + n.getFullYear() + "  " + hour_+ ":"+ min__+" am";
+								if(!t_.includes(tmp_str)) t_.push(tmp_str);
+								tmp_date.push(tmp_str);
+								build_html += "<tr><td>" + n.getDate() + " " + n.getDay() + " " + n.getFullYear() + "  " +hour_+ ":"+ min__ +" "+"am" + "</td></tr>";
+								min__ = "";
+								hour_="";
+							}
+					
+          					else
+							{
+							    
+								if((n.getMinutes()-12) <= 9) min_ = min_+"0"+min_ 
+							    tmp_str = n.getDate() + " " + n.getFullYear() + "  " + min_ + ":"+ min_+" pm";
+							    if(!t_.includes(tmp_str)) t_.push(tmp_str); 
+								tmp_date.push(tmp_str);
+							    build_html += "<tr><td>" + n.getDate() + " " + n.getDay() + " " + n.getFullYear() + "  " + (n.getHours()-12) + ":"+ min_ + " " + "pm" + "</td></tr>";
+							}
+						}
+						for(var g=0;t_.length>g;g++)
+						{
+							for(var j=0;j<tmp_date.length;j++)
+								if(t_[g] == tmp_date[j])
+									counter_ += 1
+							main_dates__.push({value:counter_,date:t_[g].substring(8, 18)})
+							counter_ = 0
+						}
+						plotData(main_dates__);
+						build_html += '<tr><td> ------- </td></tr>';
+						build_html = "";
+						tmp_str = "";
+						dates__ = [];
+						tmp_ = [];
+						tmp_1 = [];
+						main_dates__ = [];
+				}
+			});	
+	}
+});
+</script>
+
+<script>
+function plotData(l)
+{
+var margin = {top: 20, right: 20, bottom: 70, left: 40},
+    width = 600 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+
+// Parse the date / time
+var	parseDate = d3.isoParse
+
+var x = d3.scaleBand().rangeRound([0, width], .05).padding(0.1);
+
+var y = d3.scaleLinear().range([height, 0]);
+
+var xAxis = d3.axisBottom()
+    .scale(x)
+    //.tickFormat(d3.timeFormat("%Y-%m-%d"));
+
+var yAxis = d3.axisLeft()
+    .scale(y)
+    .ticks(10);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+  x.domain(l.map(function(d) { return d.date; }));
+  y.domain([0, d3.max(l, function(d) { return d.value; })]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", "-.55em")
+      .attr("transform", "rotate(-90)" );
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Posts");
+
+  svg.selectAll("bar")
+      .data(l)
+    .enter().append("rect")
+      .style("fill", "steelblue")
+      .attr("x", function(d) { return x(d.date); })
+      .attr("width", x.bandwidth())
+      .attr("y", function(d) { return y(d.value); })
+      .attr("height", function(d) { return height - y(d.value); });	
+
+}
+
+</script>
+</head>
+<body>
+<button>CLICK ME</button>
+<table id="disp_data">
+</table>
+</div>
+</body>
+</html>
