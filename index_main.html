@@ -185,11 +185,11 @@ $(document).ready(function()
 								if(t2[g] == dates_tmp[j])
 									counter_ += 1
 							}
-							if(key exist in first array){
-								add both counters
-							}
-							else
-							{
+							/*if(key exist in first array){
+								add both counters and put everything in a third array that will be visualized
+							}*/
+							//else
+							//{
 								if(t2[g] > 0 && t2[g] < 12)
 								main_dates2.push({value:counter_,date:t2[g]+" am"})
 								if(t2[g] == 0)
@@ -198,7 +198,7 @@ $(document).ready(function()
 								main_dates2.push({value:counter_,date:((t2[g] - 12 )+" pm")})
 								if(t2[g] == 12)
 								main_dates2.push({value:counter_,date:("12 pm")})
-							}
+							//}
 							
 							counter_ = 0
 						}
