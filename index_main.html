@@ -10,7 +10,8 @@
 	.axis line 
 	{
 	  fill: none;
-	  stroke: #000;
+	  stroke: grey;
+	  stroke-width: 1;
 	  shape-rendering: crispEdges;
 	}
 	
@@ -24,14 +25,38 @@
 		opacity: 0.3;
 	}
 	
+	.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+
+rect .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+}
+
+rect .tooltiptext:hover {
+    visibility: visible;
+	
 </style>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://d3js.org/d3.v4.0.0-alpha.29.min.js"></script>
-
 <script>
 $(document).ready(function()
 {
+	
+	
     var build_html = "";
 	var tmp_str = "";
 	var dates_tmp= [];
@@ -39,6 +64,8 @@ $(document).ready(function()
 	var fname_ = ["15.json"];
 	var main_dates__ = [];
 	var counter_ = 0;
+	var counter2 = 0;
+	var date2 = "";
 	var tmp_date = [];
 	var tmp_holder__ = [];
 	var t1 = [];
@@ -52,7 +79,7 @@ $(document).ready(function()
 	var eof__ = false;
 	var firstclik = 0;
 	var main_dates2 = [];
-	
+	var count__ = 9000;
 	
 		$("button").click(function()
 		{	
@@ -67,14 +94,14 @@ $(document).ready(function()
 	{ $("#disp_data").html(dat); }	
 	function send_data_(fname__, clicks__)
 	{
-	  if(clicks__ == 0)// first click
+	  if(clicks__ == 0)// first click only
 	  {
 	    jQuery.ajax(
 			{
 				url : '/',
 				type: 'POST',
 				dataType : "json",
-				data: '{"filename": "'+fname__+'","count":"1000"}',
+				data: '{"filename": "'+fname__+'","count":'+count__+'}',
 				success: function(data){	
 				         
 				         if(data.length > 0 && data.length < 2) 
@@ -85,11 +112,12 @@ $(document).ready(function()
 				        
 						for(var i=0; i<data.length; i++)
 						{				   
-						       
-							   myDate = new Date(1000*data[i].date);//date
-							   //if(data[i]['geo'] != undefined)
-									//console.log(data[i]['geo'].coordinates);
-							   dates__.push(myDate.getHours());					   						   
+						       if(data[i].date != null){
+								   myDate = new Date(1000*data[i].date);//date
+								   //if(data[i]['geo'] != undefined)
+										//console.log(data[i]['geo'].coordinates);
+								   dates__.push(myDate.getHours());				
+								}								   
 						}
 						
 					    dates__.sort(function(a,b)
@@ -122,50 +150,47 @@ $(document).ready(function()
 						
 						//main_dates__.sort(function(a,b)
 					    //{ return (a-b); });						
-						
-						for(tp=0;main_dates__.length>tp;tp++)
+						/*for(tp=0;main_dates__.length>tp;tp++)
 						{
 							if(main_dates__[tp]!="")
 								console.log(main_dates__[tp]);
-						}
-						
-						//console.log(main_dates__)
+						}*/
 						if(eof__==false)
-							plotData(main_dates__, true);
-						//$("#txt").val("");
-						
+							plotDataBar(main_dates__, true);
+						$("#txt").val("");
 						build_html = "";
 						tmp_str = "";
 						dates__ = [];
 						dates_tmp = [];
-						//main_dates__ = [];   
 				}
 			});	
-			console.log("First click");
+			//console.log(main_dates__)
+			//console.log("First click");
 		}
-		else // second click ****************************************************************************
+		else // second click and after ****************************************************************************
 		{
+		dates__ = [];
+		matched___ = [];
+		not_matched__ = [];
 		
 		jQuery.ajax(
 			{
 				url : '/',
 				type: 'POST',
 				dataType : "json",
-				data: '{"filename": "'+fname__+'","count":"1000"}',
+				data: '{"filename": "'+fname__+'","count":'+count__+'}',
 				success: function(data){	
 				         
 				         if(data.length > 0 && data.length < 2) 
 						 { 
-							$("#msg_").html("END OF FILE .... ").fadeIn("slow").delay(2000).fadeOut("slow");
 							eof__ = true; 
+							console.log("END OF FILE REACHED")
 						 }
 				        
 						for(var i=0; i<data.length; i++)
 						{				   
 						       
-							   myDate = new Date(1000*data[i].date);//date
-							   //if(data[i]['geo'] != undefined)
-									//console.log(data[i]['geo'].coordinates);
+							   myDate = new Date(1000*data[i].date);
 							   dates__.push(myDate.getHours());					   						   
 						}
 						
@@ -185,58 +210,155 @@ $(document).ready(function()
 								if(t2[g] == dates_tmp[j])
 									counter_ += 1
 							}
-							/*if(key exist in first array){
-								add both counters and put everything in a third array that will be visualized
-							}*/
-							//else
-							//{
-								if(t2[g] > 0 && t2[g] < 12)
-								main_dates2.push({value:counter_,date:t2[g]+" am"})
-								if(t2[g] == 0)
-								main_dates2.push({value:counter_,date:("12 am")})
-								if(t2[g] > 12)
-								main_dates2.push({value:counter_,date:((t2[g] - 12 )+" pm")})
-								if(t2[g] == 12)
-								main_dates2.push({value:counter_,date:("12 pm")})
-							//}
 							
+							
+								if(t2[g] > 0 && t2[g] < 12)
+									main_dates2.push({value:counter_,date:t2[g]+" am"})
+									
+								if(t2[g] == 0)
+									main_dates2.push({value:counter_,date:("12 am")})
+								
+								if(t2[g] > 12)
+									main_dates2.push({value:counter_,date:((t2[g] - 12 )+" pm")})
+									
+								if(t2[g] == 12)
+									main_dates2.push({value:counter_,date:("12 pm")})
+									
 							counter_ = 0
-						}
+						}					
 						
-						//main_dates__.sort(function(a,b)
-					    //{ return (a-b); });						
 						
-						for(tp=0;main_dates2.length>tp;tp++)
+						/************************************
+						for(var idx_f = 0;main_dates__.length>idx_f;idx_f++)
 						{
-							if(main_dates2[tp]!="")
-								console.log(main_dates2[tp]);
+							for(var idx_s = 0;main_dates2.length>idx_s;idx_s++)
+							{
+									
+							       if((main_dates__[idx_f].date.toString()) == (main_dates2[idx_s].date.toString()))
+								   { 
+										console.log(main_dates__[idx_s].value, main_dates2[idx_s].value);
+										
+												matched___.push({value:(main_dates2[idx_f].value + main_dates__[idx_f].value), date:(main_dates__[idx_f].date.toString())});   
+												break;
+								   }
+									   
+								   else matched___.push({value:(main_dates2[idx_f].value), date:(main_dates2[idx_f].date.toString())});
+							       
+							}
+						}	
+						console.log(matched___);
+						**************************************/
+						
+						
+						//console.log("date2: " + main_dates2[date].date+ "  value2: " +main_dates2[date].value );
+						//console.log("date1: " + main_dates__[a].date+ "  value1: " +main_dates__[a].value );
+						
+						
+						for(date in main_dates2){
+							//console.log(date);
+							var existalready = false;
+							//console.log(main_dates2[date].value);
+							for(var a in main_dates__){
+							
+								if(main_dates2[date].date == main_dates__[a].date){
+									existalready = true;
+									//console.log(main_dates2[date].value);
+									main_dates__[a].value += main_dates2[date].value;
+									break;
+								}
+							}
+	
+							if(!existalready){
+								//console.log(main_dates2[date].value );
+								//console.log("date2: " + main_dates2[date].date+ "  value2: " +main_dates2[date].value );
+								main_dates__.push({value:main_dates2[date].value,date:main_dates2[date].date});
+							} 
 						}
 						
-						//console.log(main_dates__)
+						
+						
+						
+						main_dates__.sort(function(a, b){
+							
+							var afin = a.date.substring(a.date.length-2);
+							var bfin = b.date.substring(b.date.length-2);
+							var adebut = a.date.substring(0,2);
+							var bdebut = b.date.substring(0,2);
+							adebut = Number(adebut);
+							bdebut = Number(bdebut);
+							
+							if(afin == "am"){							//a 
+								if(adebut == 12){a = 0;}
+								else {a = adebut;}
+							}
+							else if(afin == "pm"){
+								if(adebut == 12){a = 12;}
+								else {a = (adebut+12);}
+							}
+							
+							if(bfin == "am"){							//b
+								if(bdebut == 12){b = 0;}
+								else {b = bdebut;}
+							}
+							else if(bfin == "pm"){
+								if(bdebut == 12){b = 12;}
+								else {b = (bdebut+12);}
+							}
+												
+							var val_date_a = a
+							var	val_date_b = b
+								
+							if(val_date_a < val_date_b) return -1;
+							if(val_date_a > val_date_b) return 1;
+							return 0;
+						});
+						
+						
+						/*for(tp=0;main_dates__.length>tp;tp++)
+						{
+							if(main_dates__[tp]!="")
+								console.log(main_dates__[tp]);
+						}*/
+						
+						
+						//console.log(main_dates__);
+						
+						/*for(a=0;a<main_dates2.length;a++){
+							for(b=0;b<main_dates__.length;b++){
+								if(main_dates2[a].date == main_dates__[b].date){
+									main_dates__[b].value = main_dates__[b].value + main_dates2[a].value
+									main_dates2[a].value = 0;
+								}
+								else{
+									counter2 = main_dates2[a].value;
+									date2 = main_dates2[a].date;
+									main_dates__.push({value:counter2,date:date2});
+								}
+							}
+						}*/	
 						if(eof__==false)
-							plotData(main_dates2, true);
-						//$("#txt").val("");
+							plotDataBar(main_dates__, true);
 						
 						build_html = "";
 						tmp_str = "";
 						dates__ = [];
-						dates_tmp = [];
-						//main_dates__ = [];   
+						dates_tmp = [];  
+						main_dates2 = [];
 				}
 			});	
-		
-		
-		
-		
-		
-		    console.log("second click");
+		    console.log("next click");
 		}
 	}
 });
 </script>
 
 <script>
-function plotData(l, state_)
+/*function call_hover_fun()
+{
+    console.log("Mouse Hovering .... ");
+}*/
+
+function plotDataBar(l, state_)
 {
 	if(state_ == true)
 	{
@@ -244,22 +366,34 @@ function plotData(l, state_)
 			width = 600 - margin.left - margin.right,
 			height = 300 - margin.top - margin.bottom;
 		// Parse the date / time
+		
 		var	parseDate = d3.isoParse
+		var parseTime = d3.timeParse("%H:%M %p");
 		var x = d3.scaleBand().rangeRound([0, width], .05).padding(0.1);
 		var y = d3.scaleLinear().range([height, 0]);
+		
 		var xAxis = d3.axisBottom()
 			.scale(x)//.tickFormat(d3.timeFormat("%Y-%m-%d"));
+			
 		var yAxis = d3.axisLeft()
 			.scale(y)
 			.ticks(10);
-		var svg = d3.select("body").append("svg")
+			
+		var valueline = d3.line()
+			.x(function(d) { return x(d.date); })
+			.y(function(d) { return y(d.close); });
+			
+			
+		var svg = d3.select("#area1").append("svg") // first part ************************************************************
 			.attr("width", width + margin.left + margin.right)
 			.attr("height", height + margin.top + margin.bottom)
 		  .append("g")
 			.attr("transform",
 				  "translate(" + margin.left + "," + margin.top + ")");
+				  
 		  x.domain(l.map(function(d) { return d.date; }));
 		  y.domain([0, d3.max(l, function(d) { return d.value; })]);
+		  
 		  svg.append("g")
 			  .attr("class", "x axis")
 			  .attr("transform", "translate(0," + height + ")")
@@ -269,6 +403,7 @@ function plotData(l, state_)
 			  .attr("dx", "-.8em")
 			  .attr("dy", "-.55em")
 			  .attr("transform", "rotate(-90)" );
+			  
 		  svg.append("g")
 			  .attr("class", "y axis")
 			  .call(yAxis)
@@ -281,11 +416,14 @@ function plotData(l, state_)
 		  svg.selectAll("bar")
 			  .data(l)
 			.enter().append("rect")
+			  //.on("mouseover",call_hover_fun)
 			  .style("fill", "steelblue")
 			  .attr("x", function(d) { return x(d.date); })
 			  .attr("width", x.bandwidth())
 			  .attr("y", function(d) { return y(d.value); })
-			  .attr("height", function(d) { return height - y(d.value); });	
+			  .attr("height", function(d) { return height - y(d.value); });
+			  //.attr("tooltip","<span class='tooltiptext'>Tooltip text</span>");
+			
 	}
 }
 
@@ -293,11 +431,11 @@ function plotData(l, state_)
 </head>
 <body>
 <div id="txt"></div>
-<button>CLEAR ME</button>
+<button>Show data</button>
 <table id="disp_data">
 </table>
 </div>
-<div id="msg_"></div>
-
+<div id="area1"></div>
+<div id="area2"></div>
 </body>
 </html>
