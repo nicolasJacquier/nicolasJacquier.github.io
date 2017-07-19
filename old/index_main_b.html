@@ -52,8 +52,6 @@ rect .tooltiptext:hover {
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://d3js.org/d3.v4.0.0-alpha.29.min.js"></script>
-<script src='https://api.mapbox.com/mapbox-gl-js/v0.38.0/mapbox-gl.js'></script>
-<link href='https://api.mapbox.com/mapbox-gl-js/v0.38.0/mapbox-gl.css' rel='stylesheet' />
 <script>
 $(document).ready(function()
 {
@@ -64,7 +62,7 @@ $(document).ready(function()
 	var dates_tmp= [];
 	var dates__ =[];
 	var fname_ = ["15.json"];
-	main_dates__ = [];
+	var main_dates__ = [];
 	var counter_ = 0;
 	var counter2 = 0;
 	var date2 = "";
@@ -81,8 +79,7 @@ $(document).ready(function()
 	var eof__ = false;
 	var firstclik = 0;
 	var main_dates2 = [];
-	var count__ = 4000; //115768;
-	var coordinates = [];
+	var count__ = 9000;
 	
 		$("button").click(function()
 		{	
@@ -106,10 +103,7 @@ $(document).ready(function()
 				dataType : "json",
 				data: '{"filename": "'+fname__+'","count":'+count__+'}',
 				success: function(data){	
-				
-				         console.log(data.length);
-						 
-						 
+				         
 				         if(data.length > 0 && data.length < 2) 
 						 { 
 							$("#msg_").html("END OF FILE .... ").fadeIn("slow").delay(2000).fadeOut("slow");
@@ -120,15 +114,12 @@ $(document).ready(function()
 						{				   
 						       if(data[i].date != null){
 								   myDate = new Date(1000*data[i].date);//date
-								   if(data[i]['geo'] != undefined)
-										coordinates.push(data[i]['geo'].coordinates);
+								   //if(data[i]['geo'] != undefined)
+										//console.log(data[i]['geo'].coordinates);
 								   dates__.push(myDate.getHours());				
 								}								   
 						}
-						for(var i=0; i<coordinates.length; i++)
-						{
-							console.log(coordinates[i]);
-						}	
+						
 					    dates__.sort(function(a,b)
 					    { return (a-b); });
 						
@@ -164,7 +155,7 @@ $(document).ready(function()
 							if(main_dates__[tp]!="")
 								console.log(main_dates__[tp]);
 						}*/
-						//if(eof__==false)
+						if(eof__==false)
 							plotDataBar(main_dates__, true);
 						$("#txt").val("");
 						build_html = "";
@@ -172,11 +163,9 @@ $(document).ready(function()
 						dates__ = [];
 						dates_tmp = [];
 				}
-				
 			});	
 			//console.log(main_dates__)
-			console.log("First click");
-			
+			//console.log("First click");
 		}
 		else // second click and after ****************************************************************************
 		{
@@ -202,15 +191,9 @@ $(document).ready(function()
 						{				   
 						       
 							   myDate = new Date(1000*data[i].date);
-							   dates__.push(myDate.getHours());		
-								if(data[i]['geo'] != undefined){
-									coordinates.push(data[i]['geo'].coordinates);	
-								}										
+							   dates__.push(myDate.getHours());					   						   
 						}
-						for(var i=0; i<coordinates.length; i++)
-						{
-							console.log(coordinates[i]);
-						}	
+						
 					    dates__.sort(function(a,b)
 					    { return (a-b); });
 						
@@ -353,7 +336,7 @@ $(document).ready(function()
 								}
 							}
 						}*/	
-						//if(eof__==false)
+						if(eof__==false)
 							plotDataBar(main_dates__, true);
 						
 						build_html = "";
@@ -454,53 +437,5 @@ function plotDataBar(l, state_)
 </div>
 <div id="area1"></div>
 <div id="area2"></div>
-<div id='map' style='width: 400px; height: 300px;'></div>
-<script>
-	mapboxgl.accessToken = 'pk.eyJ1Ijoibmljb2xhc2oiLCJhIjoiY2o1OWlpcTBqMWpuNTJ3bWQ0cTc4dzh3cSJ9.-YwKCPVapGHxyzNiFFPXUg';
-	var map = new mapboxgl.Map({
-		container: 'map',
-		style: 'mapbox://styles/mapbox/light-v9',
-		center: [30.1,59.9],
-		zoom:8
-		
-	});
-	
-map.on('load', function () {
-	map.addLayer({
-        "id": "points",
-        "type": "symbol",
-        "source": {
-            "type": "geojson",
-            "data": {
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": coordinates[3]
-                    },
-                    "properties": {
-                        "title": "Mapbox DC",
-                        "icon": "monument"
-                    }
-                }, ]
-            }
-        },
-        "layout": {
-            "icon-image": "{icon}-15",
-            "text-field": "{title}",
-            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-            "text-offset": [0, 0.6],
-            "text-anchor": "top"
-        }
-    });
-    
-        
-       
-    
-});
-
-L.marker([50.5, 30.5]).addTo(map);
-</script>
 </body>
 </html>
