@@ -21,6 +21,10 @@ var global_counter =0;
 var rec__counter = 0;
 var size_ = 0;
 var last_chunk_size = 0;
+var g__ = 0;
+var final_point__ = false;
+var eof__ = false;
+var total_num_files = 0;
 
 var server = app.listen(8081, function () 
 {
@@ -38,8 +42,12 @@ app.post('/', function (req, res)
 	req.on("data",function(chunk){ bodyStr += chunk.toString();});
 	req.on("end",function(){
 		req_parsed_ = JSON.parse(bodyStr)
-		if(post_counter == 0) { readFile(req_parsed_.filename, req_parsed_.count, req, res); }
-		else { post__main_fun(req_parsed_.count, global_counter, req_parsed_.filename, req, res); }
+		//if(eof__ == false && total_num_files > 0)
+		//{
+			if(post_counter == 0) {  readFile(req_parsed_.filename, req_parsed_.count, req, res, req_parsed_.file_count); }
+			else { post__main_fun(req_parsed_.count, global_counter, req_parsed_.filename, req, res); }
+		//}
+		//else { finalData.push(["EOF"]); res.end( JSON.stringify(finalData)); finalData = []; }
 	});
 	
 });
@@ -51,6 +59,9 @@ function post__main_fun(chunk_sizeClient, total__count, fname, req__, res__)
 	tmp_prevCount = 0;
 	finalData=[];
 	post_counter += 1;
+	
+	console.log("Main function .... " + fname);
+	
 		var stream__ = fs.createReadStream(fname);
 		var getStream__ = function () 
 		{
@@ -65,7 +76,7 @@ function post__main_fun(chunk_sizeClient, total__count, fname, req__, res__)
 		{		
 				if(is_first_post_ == true)
 				{
-					if((counter_ < chunk_sizeClient) && (is_first_post_ == true))
+					/*if((counter_ < chunk_sizeClient) && (is_first_post_ == true))
 					{ finalData.push(data);  }
 					if((counter_ == chunk_sizeClient) && (is_first_post_ == true))
 					{ 
@@ -76,38 +87,58 @@ function post__main_fun(chunk_sizeClient, total__count, fname, req__, res__)
 						 stream__.unpipe();
 						 is_first_post_ = false;
 					} 
-					counter_+=1		
+					counter_+=1		*/
+					
+					if(final_point__ && (counter_ > prevCount && counter_ < (global_counter - prevCount) + parseInt(prevCount))) 
+					finalData.push(data);
+					
+					// SEND THE LAST CHUNK OF THE FILE
+					if(final_point__ && (counter_ > prevCount && counter_ == (global_counter - prevCount) + parseInt(prevCount))) 
+					{	finalData.push(["EOF"]); res__.end( JSON.stringify(finalData)); eof__ = true; finalData = []; total_num_files -= 1; }
+					
+					
+					if(chunk_sizeClient > (global_counter - prevCount) && final_point__ == false) final_point__ = true;
+					if(counter_ == (parseInt(prevCount) + parseInt(chunk_sizeClient)) && chunk_sizeClient < (global_counter - prevCount))
+					{	
+						prevCount = counter_; 
+						stream__.unpipe(); 
+						res__.end( JSON.stringify(finalData)); finalData = [];
+					}
+					
+					if(counter_ >= prevCount && (chunk_sizeClient < (global_counter - prevCount))) finalData.push(data); 
+					counter_ += 1
 				}		  
 				
 				
 				if(post_counter > 1 && is_first_post_ == false)
 				{
+					if(final_point__ && (counter_ > prevCount && counter_ < (global_counter - prevCount) + parseInt(prevCount))) 
+					finalData.push(data);
 					
-					if(chunk_sizeClient > (global_counter - prevCount)){ 
+					// SEND THE LAST CHUNK OF THE FILE
+					if(final_point__ && (counter_ > prevCount && counter_ == (global_counter - prevCount) + parseInt(prevCount))) 
+					{	finalData.push(["EOF"]); res__.end( JSON.stringify(finalData)); eof__ = true; finalData = []; total_num_files -= 1; }
 					
-						console.log("NEAR TO END ... ", counter_, (global_counter - prevCount), (parseInt(prevCount) + parseInt(chunk_sizeClient)));
-						last_chunk_size = (global_counter - prevCount) - 2;
-						console.log("Last chunk "+ last_chunk_size);
-						finalData.push(["EOF"]);
 					
-					}
-					
+					if(chunk_sizeClient > (global_counter - prevCount) && final_point__ == false) final_point__ = true;
 					if(counter_ == (parseInt(prevCount) + parseInt(chunk_sizeClient)) && chunk_sizeClient < (global_counter - prevCount))
 					{	
+						prevCount = counter_; 
 						stream__.unpipe(); 
-						prevCount = counter_;
-						stream__.unpipe();
-						res__.end( JSON.stringify(finalData));
+						res__.end( JSON.stringify(finalData)); finalData = [];
 					}
 					
-					if(counter_ >= prevCount) finalData.push(data); 
+					if(counter_ >= prevCount && (chunk_sizeClient < (global_counter - prevCount))) finalData.push(data); 
 					counter_ += 1
 				}
 		})); 	
+		
 }
 
-function readFile(param, client_num_rec_req, request__, resp__)
+function readFile(param, client_num_rec_req, request__, resp__, file_count)
 {	
+    total_num_files = file_count;
+	
 	var stream = fs.createReadStream(req_parsed_.filename);
 	var getStream = function () 
 	{

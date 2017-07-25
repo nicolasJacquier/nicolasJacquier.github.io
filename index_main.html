@@ -14,15 +14,22 @@
 	  stroke-width: 1;
 	  shape-rendering: crispEdges;
 	}
+	#mapid 
+	{ 
 	
+		height: 500px; 
+		width : 500px;
+			
+	}
 	#msg_
 	{
-		font-size: 57pt;
-		color: blue;
-		position: absolute;
+		font-size: 20pt;
+		color: black;
+		position: relative;
 		left: 443px;
-		top: 396px;
+		//top: 396px;
 		opacity: 0.3;
+		display:none;
 	}
 	
 	.tooltip {
@@ -48,12 +55,45 @@ rect .tooltiptext {
 rect .tooltiptext:hover {
     visibility: visible;
 	
+
 </style>
+
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://d3js.org/d3.v4.0.0-alpha.29.min.js"></script>
-<script src='https://api.mapbox.com/mapbox-gl-js/v0.38.0/mapbox-gl.js'></script>
-<link href='https://api.mapbox.com/mapbox-gl-js/v0.38.0/mapbox-gl.css' rel='stylesheet' />
+
+
+<body>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css"
+   integrity="sha512-wcw6ts8Anuw10Mzh9Ytw4pylW8+NAD4ch3lqm9lzAsTxg0GFeJgoAtxuCLREZSC5lUXdVyo/7yfsqFjQ4S+aKw=="
+   crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"
+   integrity="sha512-mNqn2Wg7tSToJhvHcqfzLMU6J4mkOImSPTxVZAdo+lcPlk+GhZmYgACEe0x35K7YzW1zJ7XyJV/TT1MrdXvMcA=="
+   crossorigin=""></script>
+   
+<div id="txt"></div>
+<button id="0" >Show data</button>
+<button id="1" >Dataset 1</button>
+<button id="2" >Dataset 2</button>
+<button id="3" >Dataset 3</button>
+<table id="disp_data">
+</table>
+</div>
+<table>
+	<tr>
+	<td><div id="area1"></div>
+	</td>
+	<td><div id="area2"></div>
+	</td>
+	<td><div id="mapid"></div>
+	</td>
+	</tr>
+</table>
+
+
+
+<div id="msg_">END OF FILE  .....  </div>
+</body>
 <script>
 $(document).ready(function()
 {
@@ -81,14 +121,59 @@ $(document).ready(function()
 	var eof__ = false;
 	var firstclik = 0;
 	var main_dates2 = [];
-	var count__ = 4000; //115768;
-	var coordinates = [];
+	var count__ = 2000; //115768;
+	var coordinatesTab = [];
+	var id_defined = false;
+	var mymap = L.map('mapid').setView([59.9, 30.1], 8);
+	var markers = [];
+	
+	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+					attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+					//maxZoom: 18,
+					id: 'mapbox.streets',
+					accessToken: 'pk.eyJ1Ijoibmljb2xhc2oiLCJhIjoiY2o1OWlpcTBqMWpuNTJ3bWQ0cTc4dzh3cSJ9.-YwKCPVapGHxyzNiFFPXUg'
+	}).addTo(mymap);
 	
 		$("button").click(function()
-		{	
-			for(var findex = 0;findex<fname_.length;findex++)
-				send_data_(fname_[findex], firstclik);   
-			firstclik += 1;
+		{
+			if(this.id == 1){
+				$("#2").hide(); 
+				$("#3").hide(); 
+				$("#1").text('Dataset 1 chosen');
+				$("#1").prop("disabled",true);
+				fname_ = ["15.json"];
+				for(var findex = 0;findex<fname_.length;findex++)
+					send_data_(fname_[findex], firstclik);   
+				firstclik += 1;
+			}
+			if(this.id == 2){
+				$("#1").hide(); 
+				$("#3").hide();
+				$("#2").text('Dataset 2 chosen');
+				$("#2").prop("disabled",true);
+				fname_ = ["16.json"];
+				for(var findex = 0;findex<fname_.length;findex++)
+					send_data_(fname_[findex], firstclik);   
+				firstclik += 1;
+			}
+			if(this.id == 3){
+				$("#1").hide(); 
+				$("#2").hide();
+				$("#3").text('Dataset 3 chosen');
+				$("#3").prop("disabled",true);
+				fname_ = ["17.json"];
+				for(var findex = 0;findex<fname_.length;findex++)
+					send_data_(fname_[findex], firstclik);   
+				firstclik += 1;
+			}
+			
+			if(this.id == 0){				
+				for(var findex = 0;findex<fname_.length;findex++)
+					if(eof__ == false) send_data_(fname_[findex], firstclik);   
+					console.log(fname_);
+				firstclik += 1;
+			}
+			
 		});
 		
 		
@@ -97,321 +182,374 @@ $(document).ready(function()
 	{ $("#disp_data").html(dat); }	
 	function send_data_(fname__, clicks__)
 	{
-	  if(clicks__ == 0)// first click only
-	  {
-	    jQuery.ajax(
-			{
-				url : '/',
-				type: 'POST',
-				dataType : "json",
-				data: '{"filename": "'+fname__+'","count":'+count__+'}',
-				success: function(data){	
-				
-				         console.log(data.length);
-						 
-						 
-				         if(data.length > 0 && data.length < 2) 
-						 { 
-							$("#msg_").html("END OF FILE .... ").fadeIn("slow").delay(2000).fadeOut("slow");
-							eof__ = true; 
-						 }
-				        
-						for(var i=0; i<data.length; i++)
-						{				   
-						       if(data[i].date != null){
-								   myDate = new Date(1000*data[i].date);//date
-								   if(data[i]['geo'] != undefined)
-										coordinates.push(data[i]['geo'].coordinates);
-								   dates__.push(myDate.getHours());				
-								}								   
-						}
-						for(var i=0; i<coordinates.length; i++)
-						{
-							console.log(coordinates[i]);
-						}	
-					    dates__.sort(function(a,b)
-					    { return (a-b); });
-						
-						for(var i=0; i<dates__.length;i++)
-						{
-						    dates_tmp.push(dates__[i]);
-							if(!t1.includes(dates__[i])) t1.push(dates__[i]);
-						}
-						
-						for(var g=0;t1.length>g;g++)
-						{
-							for(var j=0;j<dates_tmp.length;j++)
-							{
-								if(t1[g] == dates_tmp[j])
-									counter_ += 1
-							}
+	  //fname__ = "15.json";
+		if(clicks__ == 0)// first click only
+		{
+			//console.log("Timer ON")
+			request=jQuery.ajax(
+				{
+					url : '/',
+					type: 'POST',
+					dataType : "json",
+					data: '{"filename": "'+fname__+'","count":'+count__+'}',
+					success: function(data){					        
+							/*for(var i=0; i<data.length; i++)
+							{				   
+								   if(data[i].date != null){
+									   myDate = new Date(1000*data[i].date);//date
+									   if(data[i]['geo'] != undefined)
+											coordinates.push(data[i]['geo'].coordinates);
+									   dates__.push(myDate.getHours());				
+									}								   
+							}*/
 							
-							if(t1[g] > 0 && t1[g] < 12)
-							main_dates__.push({value:counter_,date:t1[g]+" am"})
-							if(t1[g] == 0)
-							main_dates__.push({value:counter_,date:("12 am")})
-							if(t1[g] > 12)
-							main_dates__.push({value:counter_,date:((t1[g] - 12 )+" pm")})
-							if(t1[g] == 12)
-							main_dates__.push({value:counter_,date:("12 pm")})
-							counter_ = 0
-						}
-						
-						//main_dates__.sort(function(a,b)
-					    //{ return (a-b); });						
-						/*for(tp=0;main_dates__.length>tp;tp++)
-						{
-							if(main_dates__[tp]!="")
-								console.log(main_dates__[tp]);
-						}*/
-						//if(eof__==false)
-							plotDataBar(main_dates__, true);
-						$("#txt").val("");
-						build_html = "";
-						tmp_str = "";
-						dates__ = [];
-						dates_tmp = [];
-				}
+							if(data.length > 0)
+							{
+								for(var i=0; i<data.length; i++)
+								{				   
+									   
+									   myDate = new Date(1000*data[i].date);
+									   dates__.push(myDate.getHours());	
+										if(data[i] == "EOF")
+										{						
+											
+											$("#msg_").show();
+											$("#msg_").html("END OF FILE .... ").fadeIn("slow").delay(2000).fadeOut("slow");
+											eof__ = true;
+										}
+											if(data[i]['geo'] != undefined)
+											{
+												coordinatesTab.push(data[i]['geo'].coordinates);	
+												
+											}										
+								}
+								//console.log(data[1].date);
+								/*for(var i=0; i<coordinates.length; i++)
+								{
+									console.log(coordinates[i]);
+								}	*/
+								dates__.sort(function(a,b)
+								{ return (a-b); });
+								
+								for(var i=0; i<dates__.length;i++)
+								{
+									dates_tmp.push(dates__[i]);
+									if(!t1.includes(dates__[i])) t1.push(dates__[i]);
+								}
+								
+								for(var g=0;t1.length>g;g++)
+								{
+									for(var j=0;j<dates_tmp.length;j++)
+									{
+										if(t1[g] == dates_tmp[j])
+											counter_ += 1
+									}
+									
+									if(t1[g] > 0 && t1[g] < 12)
+									main_dates__.push({value:counter_,date:t1[g]+" am"})
+									if(t1[g] == 0)
+									main_dates__.push({value:counter_,date:("12 am")})
+									if(t1[g] > 12)
+									main_dates__.push({value:counter_,date:((t1[g] - 12 )+" pm")})
+									if(t1[g] == 12)
+									main_dates__.push({value:counter_,date:("12 pm")})
+									
+									
+									counter_ = 0;
+								}
+								
+								//main_dates__.sort(function(a,b)
+								//{ return (a-b); });						
+								/*for(tp=0;main_dates__.length>tp;tp++)
+								{
+									if(main_dates__[tp]!="")
+										console.log(main_dates__[tp]);
+								}*/
+								//if(eof__==false)
+								
+								for(var i=0; i<coordinatesTab.length; i++){
+								
+									var stringFirst = coordinatesTab[i].split(' ')[0];
+									var stringSecond = coordinatesTab[i].split(' ')[1];
+									markers.push({lat:stringFirst,lng:stringSecond});
+								}
+
+								
+								/*for ( var i=0; i < (markers.length); i++ ) 
+								{
+									L.circleMarker( [markers[i].lat, markers[i].lng],{radius:2,color:'#0101DF'} )
+									.addTo( mymap );
+								}*/
+								//var marker = L.marker([51.5, -0.09]).addTo(mymap);
+									plotDataBar(main_dates__, true);
+								$("#txt").val("");
+								build_html = "";
+								tmp_str = "";
+								dates__ = [];
+								dates_tmp = [];
+							}
+								/*for(var i=0; i<coordinatesTab.length; i++){
+								
+									var stringFirst = coordinatesTab[i].split(' ')[0];
+									var stringSecond = coordinatesTab[i].split(' ')[1];
+									markers.push({lat:stringFirst,lng:stringSecond});
+	
+								}
+								for ( var i=0; i < (markers.length); i++ ) 
+								{
+									L.circleMarker( [markers[i].lat, markers[i].lng],{radius:2,color:'#0101DF'} )
+									.addTo( mymap );
+								}*/
+		
+								
+					}
+					
+				});	
 				
-			});	
-			//console.log(main_dates__)
-			console.log("First click");
-			
+				
 		}
+		
+
+		
 		else // second click and after ****************************************************************************
 		{
 		dates__ = [];
 		matched___ = [];
 		not_matched__ = [];
 		
-		jQuery.ajax(
-			{
+		request=jQuery.ajax({
 				url : '/',
 				type: 'POST',
 				dataType : "json",
 				data: '{"filename": "'+fname__+'","count":'+count__+'}',
 				success: function(data){	
-				         
-				         if(data.length > 0 && data.length < 2) 
-						 { 
-							eof__ = true; 
-							console.log("END OF FILE REACHED")
-						 }
-				        
-						for(var i=0; i<data.length; i++)
-						{				   
-						       
-							   myDate = new Date(1000*data[i].date);
-							   dates__.push(myDate.getHours());		
-								if(data[i]['geo'] != undefined){
-									coordinates.push(data[i]['geo'].coordinates);	
-								}										
-						}
-						for(var i=0; i<coordinates.length; i++)
-						{
-							console.log(coordinates[i]);
-						}	
-					    dates__.sort(function(a,b)
-					    { return (a-b); });
-						
-						for(var i=0; i<dates__.length;i++)
-						{
-						    dates_tmp.push(dates__[i]);
-							if(!t2.includes(dates__[i])) t2.push(dates__[i]);
-						}
-						
-						for(var g=0;t2.length>g;g++)
-						{
-							for(var j=0;j<dates_tmp.length;j++)
-							{
-								if(t2[g] == dates_tmp[j])
-									counter_ += 1
-							}
-							
-							
-								if(t2[g] > 0 && t2[g] < 12)
-									main_dates2.push({value:counter_,date:t2[g]+" am"})
-									
-								if(t2[g] == 0)
-									main_dates2.push({value:counter_,date:("12 am")})
-								
-								if(t2[g] > 12)
-									main_dates2.push({value:counter_,date:((t2[g] - 12 )+" pm")})
-									
-								if(t2[g] == 12)
-									main_dates2.push({value:counter_,date:("12 pm")})
-									
-							counter_ = 0
-						}					
-						
-						
-						/************************************
-						for(var idx_f = 0;main_dates__.length>idx_f;idx_f++)
-						{
-							for(var idx_s = 0;main_dates2.length>idx_s;idx_s++)
-							{
-									
-							       if((main_dates__[idx_f].date.toString()) == (main_dates2[idx_s].date.toString()))
-								   { 
-										console.log(main_dates__[idx_s].value, main_dates2[idx_s].value);
-										
-												matched___.push({value:(main_dates2[idx_f].value + main_dates__[idx_f].value), date:(main_dates__[idx_f].date.toString())});   
-												break;
-								   }
-									   
-								   else matched___.push({value:(main_dates2[idx_f].value), date:(main_dates2[idx_f].date.toString())});
-							       
-							}
-						}	
-						console.log(matched___);
-						**************************************/
-						
-						
-						//console.log("date2: " + main_dates2[date].date+ "  value2: " +main_dates2[date].value );
-						//console.log("date1: " + main_dates__[a].date+ "  value1: " +main_dates__[a].value );
-						
-						
-						for(date in main_dates2){
-							//console.log(date);
-							var existalready = false;
-							//console.log(main_dates2[date].value);
-							for(var a in main_dates__){
-							
-								if(main_dates2[date].date == main_dates__[a].date){
-									existalready = true;
-									//console.log(main_dates2[date].value);
-									main_dates__[a].value += main_dates2[date].value;
-									break;
-								}
-							}
-	
-							if(!existalready){
-								//console.log(main_dates2[date].value );
-								//console.log("date2: " + main_dates2[date].date+ "  value2: " +main_dates2[date].value );
-								main_dates__.push({value:main_dates2[date].value,date:main_dates2[date].date});
-							} 
-						}
-						
-						
-						
-						
-						main_dates__.sort(function(a, b){
-							
-							var afin = a.date.substring(a.date.length-2);
-							var bfin = b.date.substring(b.date.length-2);
-							var adebut = a.date.substring(0,2);
-							var bdebut = b.date.substring(0,2);
-							adebut = Number(adebut);
-							bdebut = Number(bdebut);
-							
-							if(afin == "am"){							//a 
-								if(adebut == 12){a = 0;}
-								else {a = adebut;}
-							}
-							else if(afin == "pm"){
-								if(adebut == 12){a = 12;}
-								else {a = (adebut+12);}
-							}
-							
-							if(bfin == "am"){							//b
-								if(bdebut == 12){b = 0;}
-								else {b = bdebut;}
-							}
-							else if(bfin == "pm"){
-								if(bdebut == 12){b = 12;}
-								else {b = (bdebut+12);}
-							}
-												
-							var val_date_a = a
-							var	val_date_b = b
-								
-							if(val_date_a < val_date_b) return -1;
-							if(val_date_a > val_date_b) return 1;
-							return 0;
-						});
-						
-						
-						/*for(tp=0;main_dates__.length>tp;tp++)
-						{
-							if(main_dates__[tp]!="")
-								console.log(main_dates__[tp]);
-						}*/
-						
-						
-						//console.log(main_dates__);
-						
-						/*for(a=0;a<main_dates2.length;a++){
-							for(b=0;b<main_dates__.length;b++){
-								if(main_dates2[a].date == main_dates__[b].date){
-									main_dates__[b].value = main_dates__[b].value + main_dates2[a].value
-									main_dates2[a].value = 0;
-								}
-								else{
-									counter2 = main_dates2[a].value;
-									date2 = main_dates2[a].date;
-									main_dates__.push({value:counter2,date:date2});
-								}
-							}
-						}*/	
-						//if(eof__==false)
-							plotDataBar(main_dates__, true);
-						
-						build_html = "";
-						tmp_str = "";
-						dates__ = [];
-						dates_tmp = [];  
-						main_dates2 = [];
-				}
-			});	
-		    console.log("next click");
-		}
-	}
-});
-</script>
 
-<script>
-/*function call_hover_fun()
-{
-    console.log("Mouse Hovering .... ");
-}*/
+						if(data.length > 0)
+						{
+								for(var i=0; i<data.length; i++)
+								{				   
+									   
+									   myDate = new Date(1000*data[i].date);
+									   dates__.push(myDate.getHours());	
+										if(data[i] == "EOF")
+										{			
+											
+											$("#msg_").show();
+											$("#msg_").html("END OF FILE .... ").fadeIn("slow").delay(2000).fadeOut("slow");
+											eof__ = true;
+										}
+											if(data[i]['geo'] != undefined)
+											{
+												coordinatesTab.push(data[i]['geo'].coordinates);	
+											}										
+								}
+
+								dates__.sort(function(a,b)
+								{ return (a-b); });
+								
+								for(var i=0; i<dates__.length;i++)
+								{
+									dates_tmp.push(dates__[i]);
+									if(!t2.includes(dates__[i])) t2.push(dates__[i]);
+								}
+								
+								for(var g=0;t2.length>g;g++)
+								{
+									for(var j=0;j<dates_tmp.length;j++)
+									{
+										if(t2[g] == dates_tmp[j])
+											counter_ += 1
+									}
+
+										if(t2[g] > 0 && t2[g] < 12)
+											main_dates2.push({value:counter_,date:t2[g]+" am"})
+											
+										if(t2[g] == 0)
+											main_dates2.push({value:counter_,date:("12 am")})
+										
+										if(t2[g] > 12)
+											main_dates2.push({value:counter_,date:((t2[g] - 12 )+" pm")})
+											
+										if(t2[g] == 12)
+											main_dates2.push({value:counter_,date:("12 pm")})
+									
+											
+									counter_ = 0
+								}					
+									
+								//console.log("date2: " + main_dates2[date].date+ "  value2: " +main_dates2[date].value );
+								//console.log("date1: " + main_dates__[a].date+ "  value1: " +main_dates__[a].value );
+									
+								for(date in main_dates2){
+									//console.log(date);
+									var existalready = false;
+									//console.log(main_dates2[date].value);
+									for(var a in main_dates__){
+									
+										if(main_dates2[date].date == main_dates__[a].date){
+											existalready = true;
+											//console.log(main_dates2[date].value);
+											main_dates__[a].value += main_dates2[date].value;
+											break;
+										}
+									}
+			
+									if(!existalready){
+										//console.log(main_dates2[date].value );
+										//console.log("date2: " + main_dates2[date].date+ "  value2: " +main_dates2[date].value );
+										main_dates__.push({value:main_dates2[date].value,date:main_dates2[date].date});
+									} 
+								}
+								
+								
+								
+								
+								
+								main_dates__.sort(function(a, b)
+								{
+									
+									var afin = a.date.substring(a.date.length-2);
+									var bfin = b.date.substring(b.date.length-2);
+									var adebut = a.date.substring(0,2);
+									var bdebut = b.date.substring(0,2);
+									adebut = Number(adebut);
+									bdebut = Number(bdebut);
+									
+									if(afin == "am"){							//a 
+										if(adebut == 12){a = 0;}
+										else {a = adebut;}
+									}
+									else if(afin == "pm"){
+										if(adebut == 12){a = 12;}
+										else {a = (adebut+12);}
+									}
+									
+									if(bfin == "am"){							//b
+										if(bdebut == 12){b = 0;}
+										else {b = bdebut;}
+									}
+									else if(bfin == "pm"){
+										if(bdebut == 12){b = 12;}
+										else {b = (bdebut+12);}
+									}
+														
+									var val_date_a = a
+									var	val_date_b = b
+										
+									if(val_date_a < val_date_b) return -1;
+									if(val_date_a > val_date_b) return 1;
+									return 0;
+								});
+								
+								
+								/*for(tp=0;main_dates__.length>tp;tp++)
+								{
+									if(main_dates__[tp]!="")
+										console.log(main_dates__[tp]);
+								}*/
+								
+								
+								//console.log(main_dates__);
+								
+								/*for(a=0;a<main_dates2.length;a++){
+									for(b=0;b<main_dates__.length;b++){
+										if(main_dates2[a].date == main_dates__[b].date){
+											main_dates__[b].value = main_dates__[b].value + main_dates2[a].value
+											main_dates2[a].value = 0;
+										}
+										else{
+											counter2 = main_dates2[a].value;
+											date2 = main_dates2[a].date;
+											main_dates__.push({value:counter2,date:date2});
+										}
+									}
+								}*/	
+								//if(eof__==false)
+								
+								
+
+								plotDataBar(main_dates__, true);
+								
+								//var marker = L.circleMarker([51.5, -0.09]).addTo(mymap);
+								
+								build_html = "";
+								tmp_str = "";
+								dates__ = [];
+								dates_tmp = [];  
+								main_dates2 = [];
+						}
+						
+								for(var i=0; i<coordinatesTab.length; i++){
+								
+									var stringFirst = coordinatesTab[i].split(' ')[0];
+									var stringSecond = coordinatesTab[i].split(' ')[1];
+									markers.push({lat:stringFirst,lng:stringSecond});
+	
+								}
+								for ( var i=0; i < (markers.length); i++ ) 
+								{
+									if(eof__ == true){
+										L.circleMarker( [markers[i].lat, markers[i].lng],{radius:2,color:'#0101DF'} )
+										.addTo( mymap );
+										}
+								}
+						
+						
+				}		
+						
+			});	
+			
+			request.done(function(data)
+			{
+			
+				console.log("requete finie");
+				//var marker1 = L.circleMarker([51.5, -0.09]).addTo(mymap);
+				//var marker2 = L.circleMarker([53, -0.09]).addTo(mymap);
+			
+			});
+		}
+		//setTimeout(bouton_clicked, 2000);
+	}
+
+	/*var marker = L.marker([51.5, -0.09]).addTo(mymap);
+	
+	for(var i=0; i<coordinatesTab.length; i++){
+								
+		var stringFirst = coordinatesTab[i].split(' ')[0];
+		var stringSecond = coordinatesTab[i].split(' ')[1];
+		markers.push({lat:stringFirst,lng:stringSecond});
+
+	}*/
+	
+	
+	
+});
 
 function plotDataBar(l, state_)
 {
 	if(state_ == true)
 	{
-		var margin = {top: 20, right: 20, bottom: 70, left: 40},
-			width = 600 - margin.left - margin.right,
-			height = 300 - margin.top - margin.bottom;
-		// Parse the date / time
-		
-		var	parseDate = d3.isoParse
-		var parseTime = d3.timeParse("%H:%M %p");
+		var margin = {top: 20, right: 20, bottom: 70, left: 40}, width = 600 - margin.left - margin.right, height = 300 - margin.top - margin.bottom;
 		var x = d3.scaleBand().rangeRound([0, width], .05).padding(0.1);
 		var y = d3.scaleLinear().range([height, 0]);
+		var xAxis = d3.axisBottom().scale(x)//.tickFormat(d3.timeFormat("%Y-%m-%d"));
+		var yAxis = d3.axisLeft().scale(y).ticks(10);
+			
+		d3.selectAll("svg > *").remove(); // clean svg for new data
+		d3.select("#barchart").remove();
+		d3.select("#dotchart").remove();
 		
-		var xAxis = d3.axisBottom()
-			.scale(x)//.tickFormat(d3.timeFormat("%Y-%m-%d"));
-			
-		var yAxis = d3.axisLeft()
-			.scale(y)
-			.ticks(10);
-			
-		var valueline = d3.line()
-			.x(function(d) { return x(d.date); })
-			.y(function(d) { return y(d.close); });
-			
-			
-		var svg = d3.select("#area1").append("svg") // first part ************************************************************
+		var svg1 = d3.select("#area1").append("svg") // first part ************************************************************
 			.attr("width", width + margin.left + margin.right)
 			.attr("height", height + margin.top + margin.bottom)
-		  .append("g")
-			.attr("transform",
-				  "translate(" + margin.left + "," + margin.top + ")");
+			.attr("id", "barchart")
+		    .append("g")
+			.attr("transform","translate(" + margin.left + "," + margin.top + ")");
 				  
 		  x.domain(l.map(function(d) { return d.date; }));
 		  y.domain([0, d3.max(l, function(d) { return d.value; })]);
 		  
-		  svg.append("g")
+		  svg1.append("g")
 			  .attr("class", "x axis")
 			  .attr("transform", "translate(0," + height + ")")
 			  .call(xAxis)
@@ -421,7 +559,7 @@ function plotDataBar(l, state_)
 			  .attr("dy", "-.55em")
 			  .attr("transform", "rotate(-90)" );
 			  
-		  svg.append("g")
+		  svg1.append("g")
 			  .attr("class", "y axis")
 			  .call(yAxis)
 			.append("text")
@@ -430,7 +568,8 @@ function plotDataBar(l, state_)
 			  .attr("dy", ".71em")
 			  .style("text-anchor", "end")
 			  .text("Posts");
-		  svg.selectAll("bar")
+			  
+		  svg1.selectAll("bar")
 			  .data(l)
 			.enter().append("rect")
 			  //.on("mouseover",call_hover_fun)
@@ -440,67 +579,72 @@ function plotDataBar(l, state_)
 			  .attr("y", function(d) { return y(d.value); })
 			  .attr("height", function(d) { return height - y(d.value); });
 			  //.attr("tooltip","<span class='tooltiptext'>Tooltip text</span>");
+			  
+		var svg2 = d3.select("#area2").append("svg") // second part ************************************************************
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.attr("id", "dotchart")
+		  .append("g")
+			.attr("transform",
+				  "translate(" + margin.left + "," + margin.top + ")");
+				  
+		  x.domain(l.map(function(d) { return d.date; }));
+		  y.domain([0, d3.max(l, function(d) { return d.value; })]);
+		  
+		  svg2.append("g")
+			  .attr("class", "x axis")
+			  .attr("transform", "translate(0," + height + ")")
+			  .call(xAxis)
+			.selectAll("text")
+			  .style("text-anchor", "end")
+			  .attr("dx", "-.8em")
+			  .attr("dy", "-.55em")
+			  .attr("transform", "rotate(-90)" );
+			  
+		  svg2.append("g")
+			  .attr("class", "y axis")
+			  .call(yAxis)
+			.append("text")
+			  .attr("transform", "rotate(-90)")
+			  .attr("y", 6)
+			  .attr("dy", ".71em")
+			  .style("text-anchor", "end")
+			  .text("Posts");
+			  
+		  svg2.selectAll("dot")
+			  .data(l)
+			.enter().append("circle")
+			  //.on("mouseover",call_hover_fun)
+			  .attr("r", 3.5)
+			  .style("fill", "chocolate")
+			  .attr("cx", function(d) { return x(d.date); })
+			  .attr("cy", function(d) { return y(d.value); })
+
+			  //.attr("tooltip","<span class='tooltiptext'>Tooltip text</span>");
 			
 	}
 }
 
-</script>
-</head>
-<body>
-<div id="txt"></div>
-<button>Show data</button>
-<table id="disp_data">
-</table>
-</div>
-<div id="area1"></div>
-<div id="area2"></div>
-<div id='map' style='width: 400px; height: 300px;'></div>
-<script>
-	mapboxgl.accessToken = 'pk.eyJ1Ijoibmljb2xhc2oiLCJhIjoiY2o1OWlpcTBqMWpuNTJ3bWQ0cTc4dzh3cSJ9.-YwKCPVapGHxyzNiFFPXUg';
-	var map = new mapboxgl.Map({
+
+
+/*mapboxgl.accessToken = 'pk.eyJ1Ijoibmljb2xhc2oiLCJhIjoiY2o1OWlpcTBqMWpuNTJ3bWQ0cTc4dzh3cSJ9.-YwKCPVapGHxyzNiFFPXUg';
+var map = new mapboxgl.Map({
 		container: 'map',
 		style: 'mapbox://styles/mapbox/light-v9',
 		center: [30.1,59.9],
 		zoom:8
 		
-	});
+});*/
 	
-map.on('load', function () {
-	map.addLayer({
-        "id": "points",
-        "type": "symbol",
-        "source": {
-            "type": "geojson",
-            "data": {
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": coordinates[3]
-                    },
-                    "properties": {
-                        "title": "Mapbox DC",
-                        "icon": "monument"
-                    }
-                }, ]
-            }
-        },
-        "layout": {
-            "icon-image": "{icon}-15",
-            "text-field": "{title}",
-            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-            "text-offset": [0, 0.6],
-            "text-anchor": "top"
-        }
-    });
-    
-        
-       
-    
-});
 
-L.marker([50.5, 30.5]).addTo(map);
+
+
+
+
+
 </script>
+</head>
+<body>
+
 </body>
 </html>
