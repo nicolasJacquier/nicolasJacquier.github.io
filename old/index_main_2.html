@@ -14,17 +14,11 @@
 	  stroke-width: 1;
 	  shape-rendering: crispEdges;
 	}
-	#infos
-	{
-		font-size: 20pt;
-		color: black;
-	
-	}
 	#mapid 
 	{ 
 	
-		height: 700px; 
-		width : 700px;
+		height: 500px; 
+		width : 500px;
 			
 	}
 	#msg_
@@ -38,24 +32,28 @@
 		display:none;
 	}
 	
-	.bar:hover {
-		fill: orangered ;
-	}
-	.toolTip {
-	  position: absolute;
-	  display: none;
-	  min-width: 80px;
-	  height: auto;
-	  background: none repeat scroll 0 0 #ffffff;
-	  border: 2px solid #000000;
-	  border-radius : 8px;
-	  padding: 14px;
-	  text-align: center;
-	}
-
+	.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
 }
 
+rect .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
 
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+}
+
+rect .tooltiptext:hover {
+    visibility: visible;
 	
 
 </style>
@@ -72,9 +70,9 @@
 <script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"
    integrity="sha512-mNqn2Wg7tSToJhvHcqfzLMU6J4mkOImSPTxVZAdo+lcPlk+GhZmYgACEe0x35K7YzW1zJ7XyJV/TT1MrdXvMcA=="
    crossorigin=""></script>
-
+   
 <div id="txt"></div>
-<button id="0" >Add Data</button>
+<button id="0" >Show data</button>
 <button id="1" >Dataset 1</button>
 <button id="2" >Dataset 2</button>
 <button id="3" >Dataset 3</button>
@@ -83,21 +81,18 @@
 </div>
 <table>
 	<tr>
-		<td><div id="area1"></div>
-		</td>
-		<td><div id="mapid"></div>
-		</td>
-	</tr>
-	<tr>
-	<td>
-		<div id="infos" align="center"></div>
+	<td><div id="area1"></div>
+	</td>
+	<td><div id="area2"></div>
+	</td>
+	<td><div id="mapid"></div>
 	</td>
 	</tr>
 </table>
 
 
 
-
+<div id="msg_">END OF FILE  .....  </div>
 </body>
 <script>
 $(document).ready(function()
@@ -108,7 +103,7 @@ $(document).ready(function()
 	var tmp_str = "";
 	var dates_tmp= [];
 	var dates__ =[];
-	var fname_ = ["18.json"];
+	var fname_ = ["15.json"];
 	main_dates__ = [];
 	var counter_ = 0;
 	var counter2 = 0;
@@ -142,12 +137,10 @@ $(document).ready(function()
 		$("button").click(function()
 		{
 			if(this.id == 1){
-			
 				$("#2").hide(); 
 				$("#3").hide(); 
 				$("#1").text('Dataset 1 chosen');
 				$("#1").prop("disabled",true);
-				$("#infos").text('July 15 2016');
 				fname_ = ["15.json"];
 				for(var findex = 0;findex<fname_.length;findex++)
 					send_data_(fname_[findex], firstclik);   
@@ -158,7 +151,6 @@ $(document).ready(function()
 				$("#3").hide();
 				$("#2").text('Dataset 2 chosen');
 				$("#2").prop("disabled",true);
-				$("#infos").text('July 16 2016');
 				fname_ = ["16.json"];
 				for(var findex = 0;findex<fname_.length;findex++)
 					send_data_(fname_[findex], firstclik);   
@@ -169,7 +161,6 @@ $(document).ready(function()
 				$("#2").hide();
 				$("#3").text('Dataset 3 chosen');
 				$("#3").prop("disabled",true);
-				$("#infos").text('July 17 2016');
 				fname_ = ["17.json"];
 				for(var findex = 0;findex<fname_.length;findex++)
 					send_data_(fname_[findex], firstclik);   
@@ -222,8 +213,8 @@ $(document).ready(function()
 										if(data[i] == "EOF")
 										{						
 											
-											//$("#msg_").show();
-											//$("#msg_").html("END OF FILE .... ").fadeIn("slow").delay(2000).fadeOut("slow");
+											$("#msg_").show();
+											$("#msg_").html("END OF FILE .... ").fadeIn("slow").delay(2000).fadeOut("slow");
 											eof__ = true;
 										}
 											if(data[i]['geo'] != undefined)
@@ -343,8 +334,8 @@ $(document).ready(function()
 										if(data[i] == "EOF")
 										{			
 											
-											//$("#msg_").show();
-											//$("#msg_").html("END OF FILE .... ").fadeIn("slow").delay(2000).fadeOut("slow");
+											$("#msg_").show();
+											$("#msg_").html("END OF FILE .... ").fadeIn("slow").delay(2000).fadeOut("slow");
 											eof__ = true;
 										}
 											if(data[i]['geo'] != undefined)
@@ -370,21 +361,20 @@ $(document).ready(function()
 											counter_ += 1
 									}
 
-									
 										if(t2[g] > 0 && t2[g] < 12)
 											main_dates2.push({value:counter_,date:t2[g]+" am"})
 											
 										if(t2[g] == 0)
-											main_dates2.push({value:(counter_/2),date:("12 am")})
+											main_dates2.push({value:counter_,date:("12 am")})
 										
 										if(t2[g] > 12)
 											main_dates2.push({value:counter_,date:((t2[g] - 12 )+" pm")})
 											
 										if(t2[g] == 12)
 											main_dates2.push({value:counter_,date:("12 pm")})
-										counter_ = 0
 									
-									
+											
+									counter_ = 0
 								}					
 									
 								//console.log("date2: " + main_dates2[date].date+ "  value2: " +main_dates2[date].value );
@@ -544,9 +534,7 @@ function plotDataBar(l, state_)
 		var y = d3.scaleLinear().range([height, 0]);
 		var xAxis = d3.axisBottom().scale(x)//.tickFormat(d3.timeFormat("%Y-%m-%d"));
 		var yAxis = d3.axisLeft().scale(y).ticks(10);
-		
-		var tooltip = d3.select("body").append("div").attr("class", "toolTip");
-		
+			
 		d3.selectAll("svg > *").remove(); // clean svg for new data
 		d3.select("#barchart").remove();
 		d3.select("#dotchart").remove();
@@ -557,9 +545,7 @@ function plotDataBar(l, state_)
 			.attr("id", "barchart")
 		    .append("g")
 			.attr("transform","translate(" + margin.left + "," + margin.top + ")");
-				
-		
-		
+				  
 		  x.domain(l.map(function(d) { return d.date; }));
 		  y.domain([0, d3.max(l, function(d) { return d.value; })]);
 		  
@@ -582,7 +568,7 @@ function plotDataBar(l, state_)
 			  .attr("dy", ".71em")
 			  .style("text-anchor", "end")
 			  .text("Posts");
-		
+			  
 		  svg1.selectAll("bar")
 			  .data(l)
 			.enter().append("rect")
@@ -591,25 +577,70 @@ function plotDataBar(l, state_)
 			  .attr("x", function(d) { return x(d.date); })
 			  .attr("width", x.bandwidth())
 			  .attr("y", function(d) { return y(d.value); })
-			  .attr("height", function(d) { return height - y(d.value); })
-			  .on("mousemove", function(d){
-
-                d3.select(this).style("fill", "orange");
-					tooltip
-					  .style("left", d3.event.pageX - 50 + "px")
-					  .style("top", d3.event.pageY - 70 + "px")
-					  .style("display", "inline-block")
-					  .html("Posts :" + (d.value));
-			  })
-    		  .on("mouseout", function(d){
-				d3.select(this).style("fill", "steelblue")
-					tooltip.style("display", "none");
-					
-				});
-
+			  .attr("height", function(d) { return height - y(d.value); });
+			  //.attr("tooltip","<span class='tooltiptext'>Tooltip text</span>");
 			  
+		var svg2 = d3.select("#area2").append("svg") // second part ************************************************************
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.attr("id", "dotchart")
+		  .append("g")
+			.attr("transform",
+				  "translate(" + margin.left + "," + margin.top + ")");
+				  
+		  x.domain(l.map(function(d) { return d.date; }));
+		  y.domain([0, d3.max(l, function(d) { return d.value; })]);
+		  
+		  svg2.append("g")
+			  .attr("class", "x axis")
+			  .attr("transform", "translate(0," + height + ")")
+			  .call(xAxis)
+			.selectAll("text")
+			  .style("text-anchor", "end")
+			  .attr("dx", "-.8em")
+			  .attr("dy", "-.55em")
+			  .attr("transform", "rotate(-90)" );
+			  
+		  svg2.append("g")
+			  .attr("class", "y axis")
+			  .call(yAxis)
+			.append("text")
+			  .attr("transform", "rotate(-90)")
+			  .attr("y", 6)
+			  .attr("dy", ".71em")
+			  .style("text-anchor", "end")
+			  .text("Posts");
+			  
+		  svg2.selectAll("dot")
+			  .data(l)
+			.enter().append("circle")
+			  //.on("mouseover",call_hover_fun)
+			  .attr("r", 3.5)
+			  .style("fill", "chocolate")
+			  .attr("cx", function(d) { return x(d.date); })
+			  .attr("cy", function(d) { return y(d.value); })
+
+			  //.attr("tooltip","<span class='tooltiptext'>Tooltip text</span>");
+			
 	}
 }
+
+
+
+/*mapboxgl.accessToken = 'pk.eyJ1Ijoibmljb2xhc2oiLCJhIjoiY2o1OWlpcTBqMWpuNTJ3bWQ0cTc4dzh3cSJ9.-YwKCPVapGHxyzNiFFPXUg';
+var map = new mapboxgl.Map({
+		container: 'map',
+		style: 'mapbox://styles/mapbox/light-v9',
+		center: [30.1,59.9],
+		zoom:8
+		
+});*/
+	
+
+
+
+
+
 
 </script>
 </head>

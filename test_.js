@@ -60,7 +60,7 @@ function post__main_fun(chunk_sizeClient, total__count, fname, req__, res__)
 	finalData=[];
 	post_counter += 1;
 	
-	console.log("Main function .... " + fname);
+	console.log("Main function .... " + fname + " size of the chunk" + total__count);
 	
 		var stream__ = fs.createReadStream(fname);
 		var getStream__ = function () 
